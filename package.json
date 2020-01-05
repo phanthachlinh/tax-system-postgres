@@ -1,0 +1,38 @@
+{
+  "name": "tax-system-postgres",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack --hot && node ./dist/server.postgres.js",
+    "test": "NODE_ENV=test jest --forceExit --watch-all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phanthachlinh/tax-system-postgres.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/phanthachlinh/tax-system-postgres/issues"
+  },
+  "homepage": "https://github.com/phanthachlinh/tax-system-postgres#readme",
+  "devDependencies": {
+    "@types/jest": "^24.0.24",
+    "@types/supertest": "^2.0.8",
+    "jest": "^24.9.0",
+    "nodemon": "^2.0.2",
+    "supertest": "^4.0.2",
+    "ts-jest": "^24.2.0",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.3",
+    "webpack": "^4.41.3",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mysql": "^2.17.1"
+  }
+}
