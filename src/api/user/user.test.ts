@@ -217,23 +217,23 @@ describe('User validate',()=>{
   })
   it('should return ID and isManager',async()=>{
     let getThrow = async()=>await request
-    .get('/user/validate')
+    .get('/user/validate/?username='+newUser.username+'&password='+newUser.password)
     .send(newUser)
     .catch(e=>{throw e})
-    .then((res:Response)=>res.body);
+    .then((res:Response)=>{return res.body});
     expect(await getThrow()).toEqual({ID: newUserID, isManager: newUser.isManager})
   })
   it('should fail no username provided',async ()=>{
     let getThrow = async()=>await request
     .get('/user/validate')
-    .send({password: 'hi'})
+    .send()
     .catch(e=>{throw e})
     .then((res:Response)=>[res.error.status,res.error.text]);
     expect(await getThrow()).toEqual([422,'Missing param username'])
   })
   it('should fail no password provided',async ()=>{
     let getThrow = async()=>await request
-    .get('/user/validate')
+    .get('/user/validate/?username='+newUser.username)
     .send({username: 'hi'})
     .catch(e=>{throw e})
     .then((res:Response)=>[res.error.status,res.error.text]);
@@ -241,8 +241,8 @@ describe('User validate',()=>{
   })
   it('should fail invalid credentials',async ()=>{
     let getThrow = async()=>await request
-    .get('/user/validate')
-    .send({username: 'not',password: 'exist'})
+    .get('/user/validate/?username='+46556+'&password='+456456)
+    .send()
     .catch(e=>{throw e})
     .then((res:Response)=>[res.error.status,res.error.text]);
     expect(await getThrow()).toEqual([404,'No matching user'])

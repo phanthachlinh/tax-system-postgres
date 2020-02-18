@@ -5,7 +5,7 @@ import {mysqlConnection} from '../../index'
 let newUserID: any;
 let newCaseID:any;
 let newCasesIDs: Array<any> = [];
-let newCase = {
+export const newCase:any = {
   status:1,
   country:'de',
   date_created: Date.now(),
@@ -19,12 +19,9 @@ describe('Test /POST case',()=>{
         done()
       })
   })
- afterEach(async(done)=>{
-    if(typeof newCaseID !=='undefined'){
-      await mysqlConnection.query("DELETE FROM Cases WHERE ID='"+newCaseID+"'",function(error: any){  if (error) throw error;done()})
-    }
-    done()
-  })
+  afterEach(async(done)=>{
+    await mysqlConnection.query("DELETE FROM Users WHERE ID='"+newUserID+"'",function(error: any){  if (error) throw error;done()})
+   })
   it('should fail missing status',async()=>{
     await request
     .post('/case')
@@ -84,32 +81,27 @@ describe('Test /POST case',()=>{
 })
 describe('Test /GET case',()=>{
   beforeEach(async(done)=>{
-    await mysqlConnection.query("INSERT INTO `Users` (`username`,`password`,`isManager`) VALUES('"+newUser.username+"','"+newUser.password+"',"+newUser.isManager+")",function (error:any, results:any, fields:any) {
+    await mysqlConnection.query("INSERT INTO `Users` (`username`,`password`,`isManager`) VALUES('"+newUser.username+"','"+newUser.password+"',"+newUser.isManager+")",async function (error:any, results:any, fields:any) {
       if (error) throw error;
-        newUserID = results.insertId
+        newUserID = results.insertId;
+        for(let i = 0; i<15;i++){
+          await mysqlConnection.query(`INSERT INTO Cases
+            (status,country,date_created,FK_Mongo_Client,FK_User)
+            VALUES ('${newCase.status}','${newCase.country}',CURRENT_TIMESTAMP,'${newCase.clientId}','${newUserID}')
+            `,function (error:any, results:any, fields:any) {
+              if (error) throw error;
+                newCasesIDs.push(results.insertId)
+                if(i==14){done()}
+            })
+        }
       })
-    for(let i = 0; i<15;i++){
-      await mysqlConnection.query(`INSERT INTO Cases
-        (status,country,date_created,FK_Mongo_Client,FK_user)
-        VALUES ('${newCase.status}','${newCase.country}',CURRENT_TIMESTAMP,'${newCase.clientId}','${newUserID}')
-        `,function (error:any, results:any, fields:any) {
-          if (error) throw error;
 
-            newCasesIDs.push(results.insertId)
-            done()
-        })
-    }
   })
   afterEach(async(done)=>{
-    for(let i = 0; i<newCasesIDs.length;i++){
-      await mysqlConnection.query("DELETE FROM Cases WHERE ID = '"+newCasesIDs[i]+"'",function (error:any, results:any, fields:any) {
+      await mysqlConnection.query("DELETE FROM Users WHERE ID = '"+newUserID+"'",function (error:any, results:any, fields:any) {
         if (error) throw error;
+        newCasesIDs = [];
         done()
-      })
-    }
-      newCasesIDs = [];
-      await mysqlConnection.query("DELETE FROM Users WHERE ID = '"+newCaseID+"'",function (error:any, results:any, fields:any) {
-        if (error) throw error;
       })
     })
     it('should fail no page provided',async (done)=>{
@@ -119,30 +111,99 @@ describe('Test /GET case',()=>{
       .catch(e=>{throw e;done()})
       .then((res:Response)=>{expect([res.status, res.error.text]).toEqual([422,'Missing param page']);done()})
     })
-/**    it('should get 5 rows',async (done)=>{
+   it('should get 5 rows',async (done)=>{
       await request
       .get('/case')
       .send({page:1})
       .catch(e=>{throw e;done()})
       .then((res:Response)=>{expect(res.body.length).toBe(5);done()})
-    })**/
+    })
 })
 describe('test /DELETE case',()=>{
   beforeEach(async(done)=>{
-    mysqlConnection.query("INSERT INTO Users (username,password,isManager) VALUES ('"+newUser.username+"','"+newUser.password+"','"+newUser.isManager+"')",(error:any,results:any,fields:any)=>{
-      if(error) throw error;
-      console.log(results)
-      done()
-    })
+    await mysqlConnection.query("INSERT INTO `Users` (`username`,`password`,`isManager`) VALUES('"+newUser.username+"','"+newUser.password+"',"+newUser.isManager+")",async function (error:any, results:any, fields:any) {
+      newUserID = results.insertId
+      if (error) throw error;
+      await mysqlConnection.query(`INSERT INTO Cases
+        (status,country,date_created,FK_Mongo_Client,FK_User)
+        VALUES ('${newCase.status}','${newCase.country}',CURRENT_TIMESTAMP,'${newCase.clientId}','${newUserID}')
+        `,function (error:any, results:any, fields:any) {
+          if (error) throw error;
+            newCaseID = results.insertId
+          done()
+        })
+      })
   })
   afterEach(async(done)=>{
-    mysqlConnection.query("DELETE FROM Users WHERE ID='"+newUserID+"'",(error:any,results:any,fields:any)=>{
+    await mysqlConnection.query("DELETE FROM Users WHERE ID='"+newUserID+"'",(error:any,results:any,fields:any)=>{
       if(error) throw error;
-      console.log(results)
       done()
     })
-    it('should fail no id provided',()=>{
-      throw new Error
-    })
+  })
+  it('should fail no id provided',async()=>{
+    await request
+    .delete('/case')
+    .send({})
+    .catch(e=>{throw e})
+    .then((res:Response)=>{expect([res.status,res.error.text]).toEqual([422,'Missing param id'])})
+  })
+  it('should post a case',async()=>{
+    await request
+    .delete('/case')
+    .send({id:newCaseID})
+    .catch(e=>{throw e})
+    .then((res:Response)=>{expect(1).toEqual(res.body.affectedRows)})
   })
 })
+describe('Test /PUT case',()=>{
+  beforeEach(async(done)=>{
+    await mysqlConnection.query("INSERT INTO `Users` (`username`,`password`,`isManager`) VALUES('"+newUser.username+"','"+newUser.password+"',"+newUser.isManager+")",async function (error:any, results:any, fields:any) {
+      newUserID = results.insertId
+      if (error) throw error;
+      await mysqlConnection.query(`INSERT INTO Cases
+        (status,country,date_created,FK_Mongo_Client,FK_User)
+        VALUES ('${newCase.status}','${newCase.country}',CURRENT_TIMESTAMP,'${newCase.clientId}','${newUserID}')
+        `,function (error:any, results:any, fields:any) {
+          if (error) throw error;
+            newCaseID = results.insertId
+          done()
+        })
+      })
+  })
+  afterEach(async(done)=>{
+    await mysqlConnection.query("DELETE FROM Users WHERE ID='"+newUserID+"'",(error:any,results:any,fields:any)=>{
+      if(error) throw error;
+      done()
+    })
+  })
+  it('should fail missing id',async()=>{
+    await request
+    .put('/case')
+    .send({})
+    .catch(e=>{throw e})
+    .then((res:Response)=>{expect([res.status,res.error.text]).toEqual([422,'Missing param id'])})
+  })
+  it('should fail missing status',async()=>{
+    await request
+    .put('/case')
+    .send({id: newCaseID})
+    .catch(e=>{throw e})
+    .then((res:Response)=>{expect([res.status,res.error.text]).toEqual([422,'Missing param status'])})
+  })
+  it('should fail missing country',async()=>{
+    await request
+    .put('/case')
+    .send({id: newCaseID, status:newCase.status})
+    .catch(e=>{throw e})
+    .then((res:Response)=>{expect([res.status,res.error.text]).toEqual([422,'Missing param country'])})
+  })
+  it('should update a case',async()=>{
+    await request
+    .put('/case')
+    .send({id: newCaseID, status:newCase.status, country: newCase.country})
+    .catch(e=>{throw e})
+    .then((res:Response)=>{expect(res.body.affectedRows).toEqual(1)})
+  })// && !req.body.status&&!req.body.country)
+})
+
+  //(status,country,date_created,FK_Mongo_Client,FK_User)

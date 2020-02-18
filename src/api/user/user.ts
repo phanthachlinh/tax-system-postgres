@@ -2,21 +2,24 @@ import express,{Router} from 'express';
 import {mysqlConnection} from '../../index';
 const router = Router();
 router.get('/validate',(req,res:express.Response)=>{
-  if(!req.body.username){
+
+  if(!req.query.username){
     res.status(422).send('Missing param username');
     return
   }
-  if(!req.body.password){
+
+  if(!req.query.password){
     res.status(422).send('Missing param password');
     return
   }
-  mysqlConnection.query("SELECT ID, isManager FROM `Users` WHERE username='"+req.body.username+"' AND `password`='"+req.body.password+"'",(error:any,results:any,fields:any)=>{
+  mysqlConnection.query("SELECT ID, isManager FROM `Users` WHERE username='"+req.query.username+"' AND `password`='"+req.query.password+"'",(error:any,results:any,fields:any)=>{
 
     if(error) throw error;
     if(results.length === 0){
         res.status(404).send('No matching user');
         return
     }
+    console.log(results)
     res.status(200).json({ID:results[0].ID,isManager:results[0].isManager?true:false})
 
   })
