@@ -1,3 +1,3 @@
-import * as request from 'supertest';
-import {app} from '../index';
-export default request(app)
+// import * as request from 'supertest';
+// import {app} from '../index';
+// export default request(app)

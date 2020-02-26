@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack --hot && node ./dist/server.postgres.js",
-    "test": "NODE_ENV=test jest --forceExit --watch-all --runInBand "
+    "start": "run-s build server",
+    "test": "NODE_ENV=test jest --forceExit --watch-all  --runInBand",
+    "build": "tsc --esModuleInterop",
+    "server": "node ./public/index.js"
   },
   "repository": {
     "type": "git",
@@ -19,10 +21,14 @@
   },
   "homepage": "https://github.com/phanthachlinh/tax-system-postgres#readme",
   "devDependencies": {
+    "@types/async": "^3.0.8",
     "@types/jest": "^24.0.24",
+    "@types/mysql": "^2.15.8",
     "@types/supertest": "^2.0.8",
+    "async": "^3.1.1",
     "jest": "^24.9.0",
     "nodemon": "^2.0.2",
+    "npm-run-all": "^4.1.5",
     "supertest": "^4.0.2",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
@@ -31,12 +37,16 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
+    "@apollo/federation": "^0.12.1",
     "@types/express": "^4.17.2",
     "@types/http-errors": "^1.6.3",
+    "apollo-server": "^2.10.1",
+    "apollo-server-express": "^2.10.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "multer": "^1.4.2",
-    "mysql": "^2.17.1"
+    "mysql": "^2.17.1",
+    "sql-injection": "0.0.6"
   }
 }

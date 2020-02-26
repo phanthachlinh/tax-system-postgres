@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
+    "outDir": "./public",
     "noImplicitAny": true,
-    "module": "es6",
+    "module": "commonjs",
     "target": "es5",
     "jsx": "react",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "types" : ["express","jest","supertest","http-errors"]
+    "types" : ["express","mysql","supertest","http-errors","async"]
   }
 }
